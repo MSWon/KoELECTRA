@@ -1,2 +1,2 @@
 # KoELECTRA
-Korean ELECTRA pretrained
+- On progress
