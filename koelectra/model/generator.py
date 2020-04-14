@@ -5,6 +5,7 @@ import tensorflow as tf
 class Generator(object):
     """ Generator class """
     def __init__(self, hyp_args):
+        self.D_hidden_dim = hyp_args['D_hidden_dim']
         self.num_layers = hyp_args['G_num_layers']
         self.num_heads = hyp_args['G_num_heads']
         self.hidden_dim = hyp_args['G_hidden_dim']
@@ -25,19 +26,21 @@ class Generator(object):
         max_seq_length = tf.shape(inputs)[1]
         # Positional Encoding
         with tf.variable_scope("Electra/Positional-encoding", reuse=tf.AUTO_REUSE):
-            position_emb = model_utils.get_position_encoding(max_seq_length, self.hidden_dim)
+            position_emb = model_utils.get_position_encoding(max_seq_length, self.D_hidden_dim)
         # Word Embedding
         with tf.variable_scope("Electra/Embeddings", reuse=tf.AUTO_REUSE):
-            self.embedding_weights = tf.get_variable('Weights', [self.vocab_size, self.hidden_dim],
+            self.embedding_weights = tf.get_variable('Weights', [self.vocab_size, self.D_hidden_dim],
                                                      dtype=tf.float32,
                                                      initializer=tf.random_normal_initializer(
                                                          0., self.hidden_dim ** -0.5))
             mask = tf.to_float(tf.not_equal(inputs, 0))
             word_emb = tf.nn.embedding_lookup(self.embedding_weights, inputs)  ## batch_size, length, dim
             word_emb *= tf.expand_dims(mask, -1)  ## zeros out masked positions
-            word_emb *= self.hidden_dim ** 0.5  ## Scale embedding by the sqrt of the hidden size
+            word_emb *= self.D_hidden_dim ** 0.5  ## Scale embedding by the sqrt of the hidden size
         ## Add Word emb & Positional emb
         encoded_inputs = tf.add(word_emb, position_emb)
+        ## Linear projection for having same hidden size as Discriminator
+        encoded_inputs = tf.layers.dense(encoded_inputs, self.hidden_dim) 
         if isTrain:
             return tf.nn.dropout(encoded_inputs, 1.0 - self.dropout)
         else:
