@@ -39,7 +39,7 @@ class Electra(object):
                                      initializer=tf.constant_initializer(0.0), trainable=False)
 
         tower_grads = []
-        total_batch = tf.shape(features['input_idx'])[0]
+        total_batch = tf.shape(features['org_input_idx'])[0]
         batch_per_gpu = total_batch // self.n_gpus
 
         with tf.variable_scope(tf.get_variable_scope()):
