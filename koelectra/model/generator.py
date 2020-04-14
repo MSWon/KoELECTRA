@@ -8,14 +8,14 @@ class Generator(object):
         self.D_hidden_dim = hyp_args['D_hidden_dim']
         self.num_layers = hyp_args['G_num_layers']
         self.num_heads = hyp_args['G_num_heads']
-        self.hidden_dim = hyp_args['G_hidden_dim']
+        self.G_hidden_dim = hyp_args['G_hidden_dim']
         self.linear_key_dim = hyp_args['G_linear_key_dim']
         self.linear_value_dim = hyp_args['G_linear_value_dim']
         self.ffn_dim = hyp_args['G_ffn_dim']
         self.dropout = hyp_args['G_dropout']
         self.vocab_size = hyp_args['vocab_size']
         self.activation = hyp_args['G_activation']
-        self.layer_norm = model_utils.LayerNormalization(self.hidden_dim)
+        self.layer_norm = model_utils.LayerNormalization(self.G_hidden_dim)
 
     def build_embed(self, inputs, isTrain):
         """
@@ -32,7 +32,7 @@ class Generator(object):
             self.embedding_weights = tf.get_variable('Weights', [self.vocab_size, self.D_hidden_dim],
                                                      dtype=tf.float32,
                                                      initializer=tf.random_normal_initializer(
-                                                         0., self.hidden_dim ** -0.5))
+                                                         0., self.D_hidden_dim ** -0.5))
             mask = tf.to_float(tf.not_equal(inputs, 0))
             word_emb = tf.nn.embedding_lookup(self.embedding_weights, inputs)  ## batch_size, length, dim
             word_emb *= tf.expand_dims(mask, -1)  ## zeros out masked positions
@@ -40,7 +40,11 @@ class Generator(object):
         ## Add Word emb & Positional emb
         encoded_inputs = tf.add(word_emb, position_emb)
         ## Linear projection for having same hidden size as Discriminator
-        encoded_inputs = tf.layers.dense(encoded_inputs, self.hidden_dim) 
+        self.G_encoder_weights = tf.get_variable('Generator/Weights', [self.D_hidden_dim, self.G_hidden_dim],
+                                                 dtype=tf.float32,
+                                                 initializer=tf.random_normal_initializer(
+                                                     0., self.G_hidden_dim ** -0.5))
+        encoded_inputs = tf.matmul(encoded_inputs, self.G_encoder_weights)
         if isTrain:
             return tf.nn.dropout(encoded_inputs, 1.0 - self.dropout)
         else:
@@ -60,7 +64,7 @@ class Generator(object):
                               num_heads=self.num_heads,
                               linear_key_dim=self.linear_key_dim,
                               linear_value_dim=self.linear_value_dim,
-                              model_dim=self.hidden_dim,
+                              model_dim=self.G_hidden_dim,
                               ffn_dim=self.ffn_dim,
                               dropout=self.dropout,
                               activation=self.activation,
@@ -73,12 +77,13 @@ class Generator(object):
         max_mask = tf.shape(mask_position)[1]
 
         with tf.variable_scope("Generator/Transform_layer", reuse=tf.AUTO_REUSE):
-            transformed_output = tf.layers.dense(sub_outputs, self.hidden_dim, activation=self.activation)
+            transformed_output = tf.layers.dense(sub_outputs, self.G_hidden_dim, activation=self.activation)
             transformed_output = self.layer_norm(transformed_output)
 
         with tf.variable_scope("Generator/Output_layer", reuse=tf.AUTO_REUSE):
             output_bias = tf.get_variable("output_bias", [self.vocab_size], initializer=tf.zeros_initializer())
-            logits = tf.matmul(transformed_output, self.embedding_weights, transpose_b=True)
+            logits = tf.matmul(transformed_output, self.G_encoder_weights, transpose_b=True)
+            logits = tf.matmul(logits, self.embedding_weights, transpose_b=True)
             logits = tf.reshape(logits, [-1, max_mask, self.vocab_size])
             logits = tf.nn.bias_add(logits, output_bias)
         return logits
