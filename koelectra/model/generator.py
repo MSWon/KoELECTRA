@@ -67,7 +67,7 @@ class Generator(object):
 
     def build_logits(self, encoder_outputs, mask_position):
         sub_outputs = model_utils.gather_indexes(encoder_outputs, mask_position)  ## batch_size*max_mask, hidden_dim
-        max_mask = round(self.max_word_len * 0.15)
+        max_mask = tf.shape(mask_position)[1]
 
         with tf.variable_scope("Generator/Transform_layer", reuse=tf.AUTO_REUSE):
             transformed_output = tf.layers.dense(sub_outputs, self.hidden_dim, activation=self.activation)
@@ -89,9 +89,9 @@ class Generator(object):
 
     def build_loss(self, logits, labels, weight_label):
         """
-        :param logits          : (batch_size, max_word_len*0.15, vocab_size)
-        :param labels : (batch_size, max_word_len*0.15)
-        :param weight_label : (batch_size, max_word_len*0.15)
+        :param logits          : (batch_size, max_len*0.15, vocab_size)
+        :param labels : (batch_size, max_len*0.15)
+        :param weight_label : (batch_size, max_len*0.15)
         """
         loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels)
         # sequence mask for padding
