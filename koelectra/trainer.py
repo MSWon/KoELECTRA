@@ -1,8 +1,8 @@
 import tensorflow as tf
 import numpy as np
 import os
-from .utils.data_utils import train_dataset_fn
-from .model.electra import Electra
+from utils.data_utils import train_dataset_fn
+from model.electra import Electra
 
 class Trainer(object):
     """ Trainer class """
