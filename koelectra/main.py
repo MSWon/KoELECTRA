@@ -1,6 +1,6 @@
 import argparse
 import yaml
-from koelectra.trainer import Trainer
+from .trainer import Trainer
 
 if __name__ == '__main__':
 
