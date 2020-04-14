@@ -97,10 +97,7 @@ def noam_scheme(d_model, global_step, warmup_steps=4000):
 
 def gather_indexes(sequence_tensor, positions):
   """Gathers the vectors at the specific positions over a minibatch."""
-  sequence_shape = sequence_tensor.get_shape().as_list()
-  seq_length = sequence_shape[1]
-  width = sequence_shape[2]
-  batch_size = tf.shape(sequence_tensor)[0]
+  batch_size, seq_length, width = get_shape_list(sequence_tensor)
   flat_offsets = tf.reshape(
     tf.range(0, batch_size, dtype=tf.int32) * seq_length, [-1, 1])
   flat_positions = tf.reshape(positions + flat_offsets, [-1])
