@@ -31,6 +31,7 @@ def get_mask_position(line, max_len, vocab_path, mask_idx, cls_idx):
     tf_vocab = get_vocab(vocab_path)
     org_input_idx = tf_vocab.lookup(tokenized_line)
     org_input_idx = tf.concat([[cls_idx], org_input_idx], axis=0)
+    org_input_idx = tf.cast(org_input_idx, tf.int32)
 
     seq_len = tf.shape(tokenized_line)[0]
     max_mask_len = round(max_len * 0.15)
