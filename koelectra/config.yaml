@@ -21,9 +21,9 @@ G_weight: 1.0
 D_weight: 50.0
 temperature: 1.0
 # data config
-corpus_path:
-vocab_path:
-model_path:
+corpus_path: wiki.corpus
+vocab_path: bpe.ko
+model_path: electra.ko.model
 # training config
 max_init_word_len: 128
 max_converge_word_len: 256
@@ -33,6 +33,6 @@ training_steps: 120000
 converge_steps: 110000
 n_gpus: 8
 # vocab config
-mask_idx:
-cls_idx:
+mask_idx: 5
+cls_idx: 6
 vocab_size: 8000
