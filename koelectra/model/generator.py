@@ -95,5 +95,6 @@ class Generator(object):
         """
         loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels)
         # sequence mask for padding
+        weight_label = tf.cast(weight_label, dtype = tf.float32)
         loss = tf.reduce_sum(loss * weight_label) / (tf.reduce_sum(weight_label) + 1e-10)
         return loss
