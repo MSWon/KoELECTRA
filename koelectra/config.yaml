@@ -31,6 +31,7 @@ init_batch_size: 512
 converge_batch_size: 256
 training_steps: 120000
 converge_steps: 110000
+n_gpus: 8
 # vocab config
 mask_idx:
 cls_idx:

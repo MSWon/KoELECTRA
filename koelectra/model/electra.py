@@ -11,6 +11,7 @@ class Electra(object):
         self.D_model = Discriminator(hyp_args)
         self.G_weight = hyp_args["G_weight"]
         self.D_weight = hyp_args["D_weight"]
+        self.n_gpus = hyp_args["n_gpus"]
         self.temperature = hyp_args["temperature"]
 
     def build_opt(self, features, d_model, global_step, warmup_steps=10000):
