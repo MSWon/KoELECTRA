@@ -61,7 +61,7 @@ def get_mask_position(line, max_len, vocab_path, mask_idx, cls_idx):
     }
     return result_dic
 
-def train_dataset_fn(corpus_path, vocab_path, max_len, mask_idx, batch_size):
+def train_dataset_fn(corpus_path, vocab_path, max_len, mask_idx, cls_idx, batch_size):
 
   with tf.device("/cpu:0"):
       dataset = tf.data.TextLineDataset(corpus_path)
@@ -70,7 +70,7 @@ def train_dataset_fn(corpus_path, vocab_path, max_len, mask_idx, batch_size):
 
       dataset = dataset.map(
           lambda x:
-          get_mask_position(x, max_len, vocab_path, mask_idx),
+          get_mask_position(x, max_len, vocab_path, mask_idx, cls_idx),
           num_parallel_calls=_thread_num
       )
 
