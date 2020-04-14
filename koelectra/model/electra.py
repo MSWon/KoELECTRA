@@ -1,5 +1,5 @@
-from generator import Generator
-from discriminator import Discriminator
+from .generator import Generator
+from .discriminator import Discriminator
 from ..utils.gpu_utils import average_gradients
 from ..utils.model_utils import AdamWeightDecayOptimizer, noam_scheme
 import tensorflow as tf
@@ -70,7 +70,8 @@ class Electra(object):
                     D_input_idx = tf.reshape(D_input_idx, [-1, tf.shape(G_input_idx)[1]])  # batch_size , seq_len
 
                     D_logits = self.D_model.build_graph(D_input_idx, mask_position)
-                    D_labels = tf.cast(tf.equal(org_input_idx, D_input_idx), tf.int32)
+                    # compare original input with Discriminator's input from index 1 (not including [CLS] which is index 0)
+                    D_labels = tf.cast(tf.equal(org_input_idx[:,1:], D_input_idx[:,1:]), tf.int32)
                     D_loss = self.D_model.build_loss(D_logits, D_labels, seq_len)
 
                     loss = self.G_weight * G_loss + self.D_weight * D_loss

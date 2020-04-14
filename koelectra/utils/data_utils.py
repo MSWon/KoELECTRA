@@ -22,21 +22,22 @@ def get_vocab(vocab_path, isTF=True):
     return vocab_dict
 
 def scatter_mask_update(tensor, indices, mask_idx):
-    updates = tf.fill(tf.shape(indices), -1)
+    updates = tf.fill(tf.shape(indices), mask_idx)
     indices = tf.reshape(indices, [-1, 1])
     return tf.tensor_scatter_update(tensor, indices, updates)
 
-def get_mask_position(line, max_len, vocab_path, mask_idx):
+def get_mask_position(line, max_len, vocab_path, mask_idx, cls_idx):
     tokenized_line = tf.string_split([line]).values
     tf_vocab = get_vocab(vocab_path)
     org_input_idx = tf_vocab.lookup(tokenized_line)
+    org_input_idx = tf.concat([[cls_idx], org_input_idx], axis=0)
 
     seq_len = tf.shape(tokenized_line)[0]
     max_mask_len = round(max_len * 0.15)
 
     # Sample 15% of the word
     sample_num_real = tf.to_int32(tf.round(tf.multiply(tf.to_float(seq_len), 0.15)))
-    idx_real = tf.range(0, seq_len)
+    idx_real = tf.range(1, seq_len)
     real_mask = tf.random_shuffle(idx_real)[:sample_num_real]
 
     sample_num_pad = max_mask_len - sample_num_real

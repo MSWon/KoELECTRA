@@ -14,7 +14,6 @@ class Discriminator(object):
         self.dropout = hyp_args['D_dropout']
         self.vocab_size = hyp_args['vocab_size']
         self.activation = hyp_args['D_activation']
-        self.max_len = hyp_args['max_len']
         self.layer_norm = model_utils.LayerNormalization(self.hidden_dim)
 
     def build_embed(self, inputs, isTrain):
@@ -68,7 +67,7 @@ class Discriminator(object):
 
     def build_logits(self, encoder_outputs, mask_position):
         sub_outputs = model_utils.gather_indexes(encoder_outputs, mask_position)  ## batch_size*max_mask, hidden_dim
-        max_mask = round(self.max_word_len * 0.15)
+        max_mask = tf.shape(mask_position)[1]
 
         with tf.variable_scope("Discriminator/Transform_layer", reuse=tf.AUTO_REUSE):
             transformed_output = tf.layers.dense(sub_outputs, self.hidden_dim, activation=self.activation)
@@ -88,12 +87,12 @@ class Discriminator(object):
 
     def build_loss(self, logits, labels, seq_len):
         """
-        :param logits : (batch_size, max_word_len)
-        :param labels : (batch_size, max_word_len)
+        :param logits : (batch_size, max_len)
+        :param labels : (batch_size, max_len)
         :param weight_label : (batch_size,)
         """
         loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=labels)
-        weight_label = tf.cast(tf.sequence_mask(seq_len, maxlen=self.max_len), tf.float32)
+        weight_label = tf.cast(tf.sequence_mask(seq_len, maxlen=tf.shape(labels)[1]), tf.float32)
         # sequence mask for padding
         loss = tf.reduce_sum(loss * weight_label) / (tf.reduce_sum(weight_label) + 1e-10)
         return loss

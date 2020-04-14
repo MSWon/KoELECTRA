@@ -1,0 +1,37 @@
+# Generator
+G_num_layers: 12
+G_num_heads: 4
+G_hidden_dim: 256
+G_linear_key_dim: 256
+G_linear_value_dim: 256
+G_ffn_dim: 1024
+G_dropout: 0.1
+G_activation: gelu
+# Discriminator
+D_num_layers: 12
+D_num_heads: 12
+D_hidden_dim: 768
+D_linear_key_dim: 768
+D_linear_value_dim: 768
+D_ffn_dim: 3072
+D_dropout: 0.1
+D_activation: gelu
+
+G_weight: 1.0
+D_weight: 50.0
+temperature: 1.0
+# data config
+corpus_path:
+vocab_path:
+model_path:
+# training config
+max_init_word_len: 128
+max_converge_word_len: 256
+init_batch_size: 512
+converge_batch_size: 256
+training_steps: 120000
+converge_steps: 110000
+# vocab config
+mask_idx:
+cls_idx:
+vocab_size: 8000
