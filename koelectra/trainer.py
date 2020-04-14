@@ -21,12 +21,13 @@ class Trainer(object):
         self.training_steps = hyp_args["training_steps"]
         self.converge_steps = hyp_args["converge_steps"]
         self.mask_idx = hyp_args["mask_idx"]
+        self.cls_idx = hyp_args["cls_idx"]
 
         train_init_dataset = train_dataset_fn(self.corpus_path,self.vocab_path,
-                                              self.max_init_word_len, self.mask_idx, self.init_batch_size)
+                                              self.max_init_word_len, self.mask_idx, self.cls_idx, self.init_batch_size)
 
         train_converge_dataset = train_dataset_fn(self.corpus_path,self.vocab_path,
-                                              self.max_converge_word_len, self.mask_idx, self.converge_batch_size)
+                                              self.max_converge_word_len, self.mask_idx, self.cls_idx, self.converge_batch_size)
 
         iters = tf.data.Iterator.from_structure(train_init_dataset.output_types,
                                                 train_init_dataset.output_shapes)
