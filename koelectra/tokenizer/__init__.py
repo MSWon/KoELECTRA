@@ -69,3 +69,16 @@ class Tokenizer(object):
         :return: BPE tokenized list
         """
         return self.sp.EncodeAsPieces(sent)
+
+    def tokenize_corpus(self, bpe_model_path, corpus_path):
+        """
+        :param corpus_path: corpus path
+        :return: BPE tokenized corpus
+        """
+        f = open(corpus_path, "r")
+        self.load(bpe_model_path)
+        with open(corpus_path +".bpe", "w") as f_out:
+            for sent in f:
+                bpe_sent = "[CLS] " + " ".join(self.tokenize(sent)).strip()
+                f_out.write(bpe_sent + "\n")
+        
