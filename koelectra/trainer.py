@@ -41,7 +41,7 @@ class Trainer(object):
         model = Electra(hyp_args)
         global_step = tf.train.get_or_create_global_step()
 
-        self.train_loss, self.train_opt = model.build_opt(features, hyp_args["hidden_dim"],
+        self.train_loss, self.train_opt = model.build_opt(features, hyp_args["D_hidden_dim"],
                                                           global_step, hyp_args["warmup_step"])
 
         ## for tensorboard
