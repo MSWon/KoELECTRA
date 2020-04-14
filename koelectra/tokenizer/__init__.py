@@ -24,7 +24,7 @@ class Tokenizer(object):
         train_sp = '--input={} --pad_id=0 --unk_id=1 \
                     --bos_id=2 --eos_id=3 \
                     --model_prefix={} \
-                    --user_defined_symbols=[URL] [MASK] [CLS] \
+                    --user_defined_symbols=[URL],[MASK],[CLS] \
                     --vocab_size={} \
                     --model_type=bpe'.format(corpus_path, model_name, vocab_size)
 
