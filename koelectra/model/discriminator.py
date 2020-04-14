@@ -91,6 +91,7 @@ class Discriminator(object):
         :param labels : (batch_size, max_len)
         :param weight_label : (batch_size,)
         """
+        labels = tf.cast(labels, tf.float32)
         loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=labels)
         weight_label = tf.cast(tf.sequence_mask(seq_len, maxlen=tf.shape(labels)[1]), tf.float32)
         # sequence mask for padding
