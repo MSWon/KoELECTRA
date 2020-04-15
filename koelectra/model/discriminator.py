@@ -69,9 +69,8 @@ class Discriminator(object):
 
     def build_logits(self, encoder_outputs):
         with tf.variable_scope("Discriminator/Transform_layer", reuse=tf.AUTO_REUSE):
-            transformed_output = tf.layers.dense(sub_outputs, self.hidden_dim, activation=self.activation)
+            transformed_output = tf.layers.dense(encoder_outputs, self.hidden_dim, activation=self.activation)
             transformed_output = self.layer_norm(transformed_output)
-
         with tf.variable_scope("Discriminator/Output_layer", reuse=tf.AUTO_REUSE):
             logits = tf.squeeze(tf.layers.dense(transformed_output, 1), -1)
         return logits
