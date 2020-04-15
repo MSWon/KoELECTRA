@@ -87,4 +87,4 @@ class Electra(object):
 
         grads = average_gradients(tower_grads)
         train_opt = opt.apply_gradients(grads, global_step=global_step)
-        return train_loss, train_opt
+        return train_loss, G_loss, D_loss, train_opt
