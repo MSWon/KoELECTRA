@@ -74,7 +74,7 @@ class Tokenizer(object):
             for sent in f:
                 if n % 10000 == 0:
                     print("{} sentences processed".format(n))
-                replaced_sent = url_replace(sent).strip()
+                replaced_sent = self.url_replace(sent).strip()
                 f_out.write(replaced_sent + "\n")
                 n += 1        
     
