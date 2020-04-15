@@ -21,10 +21,15 @@ def get_vocab(vocab_path, isTF=True):
                 vocab_dict[len(vocab_dict)] = vocab.strip()
     return vocab_dict
 
+def tensor_scatter_update(x, indices, updates):                                                                                                                                                                                                                                                                                                                                                                                                                                                                    x_shape = tf.shape(x)                                                                                                                                                                                                                                             
+    patch = tf.scatter_nd(indices, updates, x_shape)                                                                                                                                                                                                                  
+    mask = tf.greater(tf.scatter_nd(indices, tf.ones_like(updates), x_shape), 0)                                                                                                                                                                                      
+    return tf.where(mask, patch, x)
+
 def scatter_mask_update(tensor, indices, mask_idx):
     updates = tf.fill(tf.shape(indices), mask_idx)
     indices = tf.reshape(indices, [-1, 1])
-    return tf.tensor_scatter_update(tensor, indices, updates)
+    return tensor_scatter_update(tensor, indices, updates)
 
 def get_mask_position(org_input_idx, max_len, mask_idx):
     seq_len = tf.shape(org_input_idx)[0]
