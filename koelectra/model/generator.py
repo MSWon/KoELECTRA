@@ -68,11 +68,11 @@ class Generator(object):
                               dropout=self.dropout,
                               activation=self.activation,
                               isTrain=isTrain)
-        ## sequence output, pooled output
-        encoder_outputs = encoder.build(encoder_emb_inp, padding_bias)
-        self.sequence_output = encoder_outputs
-        self.pooled_output =encoder_outputs[:, 0]
-        return encoder_outputs
+            ## sequence output, pooled output
+            encoder_outputs = encoder.build(encoder_emb_inp, padding_bias)
+            self.sequence_output = encoder_outputs
+            self.pooled_output =encoder_outputs[:, 0]
+            return encoder_outputs
 
     def build_logits(self, encoder_outputs, mask_position):
         sub_outputs = model_utils.gather_indexes(encoder_outputs, mask_position)  ## batch_size*max_mask, G_hidden_dim
