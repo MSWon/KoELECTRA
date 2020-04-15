@@ -92,6 +92,9 @@ class Generator(object):
         encoder_outputs = self.build_encoder(input_idx, isTrain=True)
         ## Logits
         logits = self.build_logits(encoder_outputs, mask_position)
+        ## sequence output, pooled output,
+        self.sequence_output = encoder_outputs
+        self.pooled_output =encoder_outputs[:, 0]
         return logits
 
     def build_loss(self, logits, labels, weight_label):
