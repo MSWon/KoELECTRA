@@ -73,7 +73,7 @@ def train_dataset_fn(corpus_path, vocab_path, max_len, mask_idx, batch_size):
       dataset = dataset.map(
           lambda x:
                 tf.cond(tf.greater(tf.shape(x)[0], max_len),
-                        lambda: x[:, :max_len],
+                        lambda: x[:max_len],
                         lambda: x
                         )
       )
