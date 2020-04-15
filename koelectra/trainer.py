@@ -45,6 +45,8 @@ class Trainer(object):
 
         ## for tensorboard
         self.train_loss_graph = tf.placeholder(shape=None, dtype=tf.float32)
+        self.G_loss_graph = tf.placeholder(shape=None, dtype=tf.float32)
+        self.D_loss_graph = tf.placeholder(shape=None, dtype=tf.float32)
         self.train_ppl_graph = tf.placeholder(shape=None, dtype=tf.float32)
         print("Done")
 
@@ -56,9 +58,11 @@ class Trainer(object):
         print("Now training")
         saver = tf.train.Saver()
         ckpt = tf.train.get_checkpoint_state("./model")
-        summary_loss = tf.summary.scalar("loss", self.train_loss_graph)
+        summary_total_loss = tf.summary.scalar("total_loss", self.train_loss_graph)
+        summary_G_loss = tf.summary.scalar("G_loss", self.G_loss_graph)
+        summary_D_loss = tf.summary.scalar("D_loss", self.D_loss_graph)
         summary_ppl = tf.summary.scalar("perplexity", self.train_ppl_graph)
-        merged = tf.summary.merge([summary_loss, summary_ppl])
+        merged = tf.summary.merge([summary_total_loss, summary_G_loss, summary_D_loss, summary_ppl])
         config = tf.ConfigProto(allow_soft_placement=True)
         config.gpu_options.allow_growth = True
 
@@ -85,6 +89,8 @@ class Trainer(object):
                 if step % 100 == 0 and step > 0:
                     summary = sess.run(merged,
                                        feed_dict={self.train_loss_graph: batch_train_loss,
+                                                  self.G_loss_graph: batch_G_loss,
+                                                  self.D_loss_graph: batch_D_loss,
                                                   self.train_ppl_graph: batch_train_ppl})
                     writer.add_summary(summary, step)
 
