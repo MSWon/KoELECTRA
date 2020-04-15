@@ -63,6 +63,21 @@ class Tokenizer(object):
         sent = re.sub(url_regex, "[URL]", sent)
         return sent
 
+    def preprocess_corpus(self, corpus_path):
+        """
+        :param corpus_path: corpus path
+        :return: BPE tokenized corpus
+        """
+        f = open(corpus_path, "r")
+        n = 0
+        with open(corpus_path +".replaced", "w") as f_out:
+            for sent in f:
+                if n % 10000 == 0:
+                    print("{} sentences processed".format(n))
+                replaced_sent = url_replace(sent).strip()
+                f_out.write(replaced_sent + "\n")
+                n += 1        
+    
     def tokenize(self, sent):
         """
         :param sent: input sentence
