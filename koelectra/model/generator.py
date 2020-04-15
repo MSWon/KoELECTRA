@@ -46,7 +46,9 @@ class Generator(object):
                                                  dtype=tf.float32,
                                                  initializer=tf.random_normal_initializer(
                                                      0., self.G_hidden_dim ** -0.5))
-        encoded_inputs = tf.matmul(encoded_inputs, self.G_encoder_weights)
+        
+        encoded_inputs_flat = tf.reshape(encoded_inputs, [-1,self.D_hidden_dim])
+        encoded_inputs = tf.reshape(tf.matmul(encoded_inputs_flat, self.G_encoder_weights), [-1,max_seq_length,self.G_hidden_dim])
         if isTrain:
             return tf.nn.dropout(encoded_inputs, 1.0 - self.dropout)
         else:
@@ -75,7 +77,7 @@ class Generator(object):
             return encoder.build(encoder_emb_inp, padding_bias)
 
     def build_logits(self, encoder_outputs, mask_position):
-        sub_outputs = model_utils.gather_indexes(encoder_outputs, mask_position)  ## batch_size*max_mask, hidden_dim
+        sub_outputs = model_utils.gather_indexes(encoder_outputs, mask_position)  ## batch_size*max_mask, G_hidden_dim
         max_mask = tf.shape(mask_position)[1]
 
         with tf.variable_scope("Generator/Transform_layer", reuse=tf.AUTO_REUSE):
@@ -84,7 +86,6 @@ class Generator(object):
 
         with tf.variable_scope("Generator/Output_layer", reuse=tf.AUTO_REUSE):
             output_bias = tf.get_variable("output_bias", [self.vocab_size], initializer=tf.zeros_initializer())
-            logits = tf.matmul(transformed_output, self.G_encoder_weights, transpose_b=True)
             logits = tf.matmul(logits, self.embedding_weights, transpose_b=True)
             logits = tf.reshape(logits, [-1, max_mask, self.vocab_size])
             logits = tf.nn.bias_add(logits, output_bias)
