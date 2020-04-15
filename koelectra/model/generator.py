@@ -16,6 +16,8 @@ class Generator(object):
         self.vocab_size = hyp_args['vocab_size']
         self.activation = hyp_args['G_activation']
         self.layer_norm = model_utils.LayerNormalization(self.G_hidden_dim)
+        if self.activation == "gelu":
+            self.activation = model_utils.gelu
 
     def build_embed(self, inputs, isTrain):
         """

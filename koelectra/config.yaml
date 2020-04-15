@@ -21,8 +21,8 @@ G_weight: 1.0
 D_weight: 50.0
 temperature: 1.0
 # data config
-corpus_path: wiki.corpus
-vocab_path: bpe.ko
+corpus_path: wiki.corpus.bpe
+vocab_path: bpe.ko.vocab
 model_path: electra.ko.model
 # training config
 max_init_word_len: 128

@@ -77,8 +77,12 @@ class Tokenizer(object):
         """
         f = open(corpus_path, "r")
         self.load(bpe_model_path)
+        n = 0
         with open(corpus_path +".bpe", "w") as f_out:
             for sent in f:
-                bpe_sent = "[CLS] " + " ".join(self.tokenize(sent)).strip()
+                if n % 10000 == 0:
+                    print("{} sentences tokenized".format(n))
+                bpe_sent = " ".join(self.tokenize(sent)).strip()
                 f_out.write(bpe_sent + "\n")
+                n += 1
         

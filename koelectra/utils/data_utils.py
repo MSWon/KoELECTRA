@@ -26,14 +26,8 @@ def scatter_mask_update(tensor, indices, mask_idx):
     indices = tf.reshape(indices, [-1, 1])
     return tf.tensor_scatter_update(tensor, indices, updates)
 
-def get_mask_position(line, max_len, vocab_path, mask_idx, cls_idx):
-    tokenized_line = tf.string_split([line]).values
-    tf_vocab = get_vocab(vocab_path)
-    org_input_idx = tf_vocab.lookup(tokenized_line)
-    org_input_idx = tf.concat([[cls_idx], org_input_idx], axis=0)
-    org_input_idx = tf.cast(org_input_idx, tf.int32)
-
-    seq_len = tf.shape(tokenized_line)[0]
+def get_mask_position(org_input_idx, max_len, mask_idx):
+    seq_len = tf.shape(org_input_idx)[0]
     max_mask_len = round(max_len * 0.15)
 
     # Sample 15% of the word
@@ -62,21 +56,42 @@ def get_mask_position(line, max_len, vocab_path, mask_idx, cls_idx):
     }
     return result_dic
 
-def train_dataset_fn(corpus_path, vocab_path, max_len, mask_idx, cls_idx, batch_size):
+def train_dataset_fn(corpus_path, vocab_path, max_len, mask_idx, batch_size):
 
   with tf.device("/cpu:0"):
       dataset = tf.data.TextLineDataset(corpus_path)
+      tf_vocab = get_vocab(vocab_path)
 
       dataset = dataset.apply(tf.data.experimental.shuffle_and_repeat(_buffer_size))
-
+      # Split & add [CLS] token
+      dataset = dataset.map(
+            lambda line:
+                tf.concat([["[CLS]"], tf.string_split([line]).values], axis=0),
+                num_parallel_calls=_thread_num
+      )
+      # Truncate to max_len
       dataset = dataset.map(
           lambda x:
-          get_mask_position(x, max_len, vocab_path, mask_idx, cls_idx),
-          num_parallel_calls=_thread_num
+                tf.cond(tf.greater(tf.shape(x)[1], max_len),
+                        lambda: x[:, :max_len],
+                        lambda: x
+                        )
       )
-
-      dataset = dataset.filter(lambda x: tf.less_equal(x["seq_len"], max_len))
-
+      # word -> idx by Lookup table
+      dataset = dataset.map(
+          lambda x:
+            tf_vocab.lookup(x),
+            num_parallel_calls=_thread_num
+      )
+      # Cast to tf.int32
+      dataset = dataset.map(lambda x: tf.cast(x, tf.int32))
+      # Get mask position
+      dataset = dataset.map(
+          lambda x:
+            get_mask_position(x, max_len, mask_idx),
+            num_parallel_calls=_thread_num
+      )
+      # Padding
       dataset = dataset.padded_batch(
           batch_size,
           {
@@ -88,7 +103,6 @@ def train_dataset_fn(corpus_path, vocab_path, max_len, mask_idx, cls_idx, batch_
               "weight_label": [round(max_len * 0.15)]
           }
       )
-
       # Prefetch the next element to improve speed of input pipeline.
       dataset = dataset.prefetch(3)
   return dataset
