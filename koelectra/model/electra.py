@@ -2,6 +2,7 @@ from .generator import Generator
 from .discriminator import Discriminator
 from ..utils.gpu_utils import average_gradients
 from ..utils.model_utils import AdamWeightDecayOptimizer, noam_scheme
+from ..utils.data_utils import tensor_scatter_update
 import tensorflow as tf
 
 class Electra(object):
@@ -68,7 +69,7 @@ class Electra(object):
                     input_idx_flatten = tf.reshape(G_input_idx, [-1])  # batch_size * seq_len
                     G_infer_idx_flatten = tf.reshape(G_infer_idx, [-1]) # batch_size * mask_len
 
-                    D_input_idx = tf.tensor_scatter_update(input_idx_flatten, indices, G_infer_idx_flatten) # batch_size * seq_len
+                    D_input_idx = tensor_scatter_update(input_idx_flatten, indices, G_infer_idx_flatten) # batch_size * seq_len
                     D_input_idx = tf.reshape(D_input_idx, [-1, tf.shape(G_input_idx)[1]])  # batch_size , seq_len
                     # exclude [CLS] where it's index is 0
                     D_logits = self.D_model.build_graph(D_input_idx[:,1:])
