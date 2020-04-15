@@ -42,7 +42,7 @@ class Generator(object):
         ## Add Word emb & Positional emb
         encoded_inputs = tf.add(word_emb, position_emb)
         ## Linear projection
-        encoded_inputs = tf.layers.dense(encoded_inputs, self.G_hidden_dim, "Generator/embedding_project")
+        encoded_inputs = tf.layers.dense(encoded_inputs, self.G_hidden_dim, name="Generator/embedding_project")
 
         if isTrain:
             return tf.nn.dropout(encoded_inputs, 1.0 - self.dropout)
