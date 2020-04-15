@@ -68,15 +68,12 @@ class Discriminator(object):
             return encoder.build(encoder_emb_inp, padding_bias)
 
     def build_logits(self, encoder_outputs):
-        max_len = tf.shape(encoder_outputs)[1]
-
         with tf.variable_scope("Discriminator/Transform_layer", reuse=tf.AUTO_REUSE):
             transformed_output = tf.layers.dense(sub_outputs, self.hidden_dim, activation=self.activation)
             transformed_output = self.layer_norm(transformed_output)
 
         with tf.variable_scope("Discriminator/Output_layer", reuse=tf.AUTO_REUSE):
-            logits = tf.reshape(transformed_output, [-1, max_len, self.hidden_dim])
-            logits = tf.squeeze(tf.layers.dense(logits, 1), -1)
+            logits = tf.squeeze(tf.layers.dense(transformed_output, 1), -1)
         return logits
 
     def build_graph(self, input_idx):
