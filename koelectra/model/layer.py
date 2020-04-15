@@ -7,17 +7,11 @@ class FFN(object):
                  w1_dim=2048,
                  w2_dim=512,
                  dropout=0.1,
-                 activation="gelu"):
+                 activation="relu"):
 
         self.w1_dim = w1_dim
         self.w2_dim = w2_dim
         self.dropout = dropout
-        if activation == "relu":
-            self.activation = tf.nn.relu
-        elif activation == "gelu":
-            self.activation = gelu
-        else:
-            raise AttributeError
 
     def dense_layer(self, inputs, isTrain):
         """Return outputs of the feedforward network.
