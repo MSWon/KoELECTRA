@@ -15,7 +15,7 @@ class Generator(object):
         self.dropout = hyp_args['G_dropout']
         self.vocab_size = hyp_args['vocab_size']
         self.activation = hyp_args['G_activation']
-        self.layer_norm = model_utils.LayerNormalization(self.G_hidden_dim)
+        self.layer_norm = model_utils.LayerNormalization(self.D_hidden_dim)
         if self.activation == "gelu":
             self.activation = model_utils.gelu
 
@@ -41,14 +41,9 @@ class Generator(object):
             word_emb *= self.D_hidden_dim ** 0.5  ## Scale embedding by the sqrt of the hidden size
         ## Add Word emb & Positional emb
         encoded_inputs = tf.add(word_emb, position_emb)
-        ## Linear projection for having same hidden size as Discriminator
-        self.G_encoder_weights = tf.get_variable('Generator/Weights', [self.D_hidden_dim, self.G_hidden_dim],
-                                                 dtype=tf.float32,
-                                                 initializer=tf.random_normal_initializer(
-                                                     0., self.G_hidden_dim ** -0.5))
-        
-        encoded_inputs_flat = tf.reshape(encoded_inputs, [-1,self.D_hidden_dim])
-        encoded_inputs = tf.reshape(tf.matmul(encoded_inputs_flat, self.G_encoder_weights), [-1,max_seq_length,self.G_hidden_dim])
+        ## Linear projection
+        encoded_inputs = tf.layers.dense(encoded_inputs, self.G_hidden_dim, "Generator/embedding_project")
+
         if isTrain:
             return tf.nn.dropout(encoded_inputs, 1.0 - self.dropout)
         else:
@@ -81,13 +76,13 @@ class Generator(object):
         max_mask = tf.shape(mask_position)[1]
 
         with tf.variable_scope("Generator/Transform_layer", reuse=tf.AUTO_REUSE):
-            transformed_output = tf.layers.dense(sub_outputs, self.G_hidden_dim, activation=self.activation)
+            transformed_output = tf.layers.dense(sub_outputs, self.D_hidden_dim, activation=self.activation, 
+                                                 kernel_initializer=tf.random_normal_initializer(0., self.D_hidden_dim ** -0.5))
             transformed_output = self.layer_norm(transformed_output)
 
         with tf.variable_scope("Generator/Output_layer", reuse=tf.AUTO_REUSE):
             output_bias = tf.get_variable("output_bias", [self.vocab_size], initializer=tf.zeros_initializer())
-            logits = tf.matmul(transformed_output, self.G_encoder_weights, transpose_b=True)
-            logits = tf.matmul(logits, self.embedding_weights, transpose_b=True)
+            logits = tf.matmul(transformed_output, self.embedding_weights, transpose_b=True)
             logits = tf.reshape(logits, [-1, max_mask, self.vocab_size])
             logits = tf.nn.bias_add(logits, output_bias)
         return logits
