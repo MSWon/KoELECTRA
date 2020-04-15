@@ -86,7 +86,8 @@ class Generator(object):
 
         with tf.variable_scope("Generator/Output_layer", reuse=tf.AUTO_REUSE):
             output_bias = tf.get_variable("output_bias", [self.vocab_size], initializer=tf.zeros_initializer())
-            logits = tf.matmul(transformed_output, self.embedding_weights, transpose_b=True)
+            logits = tf.matmul(transformed_output, self.G_encoder_weights, transpose_b=True)
+            logits = tf.matmul(logits, self.embedding_weights, transpose_b=True)
             logits = tf.reshape(logits, [-1, max_mask, self.vocab_size])
             logits = tf.nn.bias_add(logits, output_bias)
         return logits
