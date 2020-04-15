@@ -64,8 +64,11 @@ class Discriminator(object):
                               dropout=self.dropout,
                               activation=self.activation,
                               isTrain=isTrain)
-
-            return encoder.build(encoder_emb_inp, padding_bias)
+        ## sequence output, pooled output
+        encoder_outputs = encoder.build(encoder_emb_inp, padding_bias)
+        self.sequence_output = encoder_outputs
+        self.pooled_output =encoder_outputs[:, 0]
+        return encoder_outputs
 
     def build_logits(self, encoder_outputs):
         with tf.variable_scope("Discriminator/Transform_layer", reuse=tf.AUTO_REUSE):
