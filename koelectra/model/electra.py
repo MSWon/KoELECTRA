@@ -70,11 +70,11 @@ class Electra(object):
 
                     D_input_idx = tf.tensor_scatter_update(input_idx_flatten, indices, G_infer_idx_flatten) # batch_size * seq_len
                     D_input_idx = tf.reshape(D_input_idx, [-1, tf.shape(G_input_idx)[1]])  # batch_size , seq_len
-
-                    D_logits = self.D_model.build_graph(D_input_idx, mask_position)
-                    # compare original input with Discriminator's input from index 1 (not including [CLS] which is index 0)
+                    # exclude [CLS] where it's index is 0
+                    D_logits = self.D_model.build_graph(D_input_idx[:,1:])
+                    # compare original input with Discriminator's input from index 1 (exclude [CLS] where it's index is 0)
                     D_labels = tf.cast(tf.equal(org_input_idx[:,1:], D_input_idx[:,1:]), tf.int32)
-                    D_loss = self.D_model.build_loss(D_logits, D_labels, seq_len)
+                    D_loss = self.D_model.build_loss(D_logits, D_labels, seq_len-1)
 
                     loss = self.G_weight * G_loss + self.D_weight * D_loss
                     # Reuse variables for the next tower.
