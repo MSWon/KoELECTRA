@@ -12,6 +12,7 @@ class FFN(object):
         self.w1_dim = w1_dim
         self.w2_dim = w2_dim
         self.dropout = dropout
+        self.activation = activation
 
     def dense_layer(self, inputs, isTrain):
         """Return outputs of the feedforward network.
