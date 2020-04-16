@@ -64,7 +64,7 @@ class Electra(object):
                     G_infer_idx = tf.argmax(G_logits_, axis=-1)   # batch_size, mask_len
                     G_infer_idx = tf.cast(G_infer_idx, tf.int32)
                     
-                    G_equal = tf.cast(tf.equal(output_idx, G_infer_idx), tf.int32)
+                    G_equal = tf.cast(tf.equal(output_idx, G_infer_idx), tf.float32)
                     weight_label = tf.cast(weight_label, dtype = tf.float32)
                     G_acc = tf.reduce_sum(G_equal * weight_label) / (tf.reduce_sum(weight_label) + 1e-10)
 
