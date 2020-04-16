@@ -77,7 +77,8 @@ class Generator(object):
     def build_logits(self, encoder_outputs, mask_position):
         sub_outputs = model_utils.gather_indexes(encoder_outputs, mask_position)  ## batch_size*max_mask, G_hidden_dim
         max_mask = tf.shape(mask_position)[1]
-
+        sub_outputs = tf.reshape(sub_outputs, [-1, max_mask, self.G_hidden_dim])
+        
         with tf.variable_scope("Generator/Transform_layer", reuse=tf.AUTO_REUSE):
             transformed_output = tf.layers.dense(sub_outputs, self.D_hidden_dim, activation=self.activation, 
                                                  kernel_initializer=tf.random_normal_initializer(0., self.D_hidden_dim ** -0.5))
@@ -85,6 +86,7 @@ class Generator(object):
 
         with tf.variable_scope("Generator/Output_layer", reuse=tf.AUTO_REUSE):
             output_bias = tf.get_variable("output_bias", [self.vocab_size], initializer=tf.zeros_initializer())
+            transformed_output = tf.reshape(transformed_output, [-1, self.D_hidden_dim])
             logits = tf.matmul(transformed_output, self.embedding_weights, transpose_b=True)
             logits = tf.reshape(logits, [-1, max_mask, self.vocab_size])
             logits = tf.nn.bias_add(logits, output_bias)
