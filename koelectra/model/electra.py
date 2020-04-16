@@ -65,6 +65,7 @@ class Electra(object):
                     G_infer_idx = tf.cast(G_infer_idx, tf.int32)
                     
                     G_equal = tf.cast(tf.equal(output_idx, G_infer_idx), tf.int32)
+                    weight_label = tf.cast(weight_label, dtype = tf.float32)
                     G_acc = tf.reduce_sum(G_equal * weight_label) / (tf.reduce_sum(weight_label) + 1e-10)
 
                     indices = mask_position + tf.range(0, batch_per_gpu*tf.shape(G_input_idx)[1], tf.shape(G_input_idx)[1])[:,None]
