@@ -63,6 +63,9 @@ class Electra(object):
                     G_logits_ = tf.stop_gradient(tf.nn.softmax(G_logits/ self.temperature))
                     G_infer_idx = tf.argmax(G_logits_, axis=-1)   # batch_size, mask_len
                     G_infer_idx = tf.cast(G_infer_idx, tf.int32)
+                    
+                    G_equal = tf.cast(tf.equal(output_idx, G_infer_idx), tf.int32)
+                    G_acc = tf.reduce_sum(G_equal * weight_label) / (tf.reduce_sum(weight_label) + 1e-10)
 
                     indices = mask_position + tf.range(0, batch_per_gpu*tf.shape(G_input_idx)[1], tf.shape(G_input_idx)[1])[:,None]
                     indices = tf.reshape(indices, [-1,1])
@@ -87,4 +90,4 @@ class Electra(object):
 
         grads = average_gradients(tower_grads)
         train_opt = opt.apply_gradients(grads, global_step=global_step)
-        return train_loss, G_loss, D_loss, train_opt
+        return train_loss, G_loss, G_acc, D_loss, train_opt
