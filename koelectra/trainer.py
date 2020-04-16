@@ -40,8 +40,8 @@ class Trainer(object):
         model = Electra(hyp_args)
         global_step = tf.train.get_or_create_global_step()
 
-        self.train_loss, self.G_loss, self.D_loss, self.train_opt = model.build_opt(features, hyp_args["D_hidden_dim"],
-                                                                    global_step, hyp_args["warmup_step"])
+        self.train_loss, self.G_loss, self.G_acc, self.D_loss, self.train_opt = model.build_opt(features, hyp_args["D_hidden_dim"],
+                                                                                   global_step, hyp_args["warmup_step"])
 
         ## for tensorboard
         self.train_loss_graph = tf.placeholder(shape=None, dtype=tf.float32)
@@ -81,10 +81,11 @@ class Trainer(object):
                 if step == self.converge_steps:
                     sess.run(self.train_converge_op)
                 n_train_step += 1
-                batch_train_loss, batch_G_loss, batch_D_loss, _ = sess.run([self.train_loss, self.G_loss, self.D_loss, self.train_opt])
+                batch_train_loss, batch_G_loss, batch_G_acc, batch_D_loss, _ = sess.run([self.train_loss, self.G_loss, self.G_acc,
+                                                                                         self.D_loss, self.train_opt])
                 batch_train_ppl = np.exp(batch_train_loss)
 
-                print("step : {:06d} train_loss : {:.6f} G_loss : {:.6f} D_loss {:.6f}".format(step + 1, batch_train_loss, batch_G_loss, batch_D_loss))
+                print("step : {:06d} train_loss : {:.6f} G_loss : {:.6f} G_acc : {:.2f} D_loss {:.6f}".format(step + 1, batch_train_loss, batch_G_loss, batch_G_acc*100, batch_D_loss))
 
                 if step % 100 == 0 and step > 0:
                     summary = sess.run(merged,
