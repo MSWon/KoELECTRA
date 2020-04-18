@@ -52,7 +52,8 @@ class Tokenizer(object):
         """
         sent = re.sub("\(.*?\)|\[.*?\]", "", sent)
         sent = re.sub("[^0-9a-zA-Z가-힣_\-@\.:&+!?'/,\s]", "", sent)
-        return sent
+        sent = re.sub("\s{2,}", " ", sent)
+        return sent.strip()
 
     def url_replace(self, sent):
         """
