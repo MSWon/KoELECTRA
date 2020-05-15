@@ -60,7 +60,7 @@ class Tokenizer(object):
         :param sent: input sentence
         :return: url replaced sentence
         """
-        url_regex = "(http[s]?://([a-zA-Z]|[가-힣]|[0-9]|[-_@\.&+!*/])+)|(www.([a-zA-Z]|[가-힣]|[0-9]|[-_@\.&+!*/])+)"
+        url_regex = "(http[s]?:/{1,2}([a-zA-Z]|[가-힣]|[0-9]|[-_@\.&+!*/])*)|(www.([a-zA-Z]|[가-힣]|[0-9]|[-_@\.&+!*/])+)"
         sent = re.sub(url_regex, "[URL]", sent)
         return sent
 
