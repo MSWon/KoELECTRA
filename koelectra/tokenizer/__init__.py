@@ -14,7 +14,7 @@ class Tokenizer(object):
         """
         self.sp.Load(bpe_model_path)
 
-    def train(self, corpus_path, model_name, vocab_size=8000):
+    def train(self, corpus_path, model_name, vocab_size, character_coverage=0.9995):
         """
         :param corpus_path: corpus path to train BPE
         :param model_name: output model prefix name
@@ -26,7 +26,8 @@ class Tokenizer(object):
                     --model_prefix={} \
                     --user_defined_symbols=[URL],[MASK],[CLS] \
                     --vocab_size={} \
-                    --model_type=bpe'.format(corpus_path, model_name, vocab_size)
+                    --character_coverage={} \
+                    --model_type=bpe'.format(corpus_path, model_name, vocab_size, character_coverage)
 
         print("training BPE model")
         for config in train_sp.replace("\t","").split("--"):
