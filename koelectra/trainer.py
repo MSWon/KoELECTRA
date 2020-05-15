@@ -47,7 +47,7 @@ class Trainer(object):
         self.train_loss_graph = tf.placeholder(shape=None, dtype=tf.float32)
         self.G_loss_graph = tf.placeholder(shape=None, dtype=tf.float32)
         self.D_loss_graph = tf.placeholder(shape=None, dtype=tf.float32)
-        self.train_ppl_graph = tf.placeholder(shape=None, dtype=tf.float32)
+        self.G_acc_graph = tf.placeholder(shape=None, dtype=tf.float32)
         print("Done")
 
     def train(self):
@@ -61,8 +61,8 @@ class Trainer(object):
         summary_total_loss = tf.summary.scalar("total_loss", self.train_loss_graph)
         summary_G_loss = tf.summary.scalar("G_loss", self.G_loss_graph)
         summary_D_loss = tf.summary.scalar("D_loss", self.D_loss_graph)
-        summary_ppl = tf.summary.scalar("perplexity", self.train_ppl_graph)
-        merged = tf.summary.merge([summary_total_loss, summary_G_loss, summary_D_loss, summary_ppl])
+        summary_G_acc = tf.summary.scalar("G_acc", self.train_ppl_graph)
+        merged = tf.summary.merge([summary_total_loss, summary_G_loss, summary_D_loss, summary_G_acc])
         config = tf.ConfigProto(allow_soft_placement=True)
         config.gpu_options.allow_growth = True
 
@@ -83,7 +83,6 @@ class Trainer(object):
                 n_train_step += 1
                 batch_train_loss, batch_G_loss, batch_G_acc, batch_D_loss, _ = sess.run([self.train_loss, self.G_loss, self.G_acc,
                                                                                          self.D_loss, self.train_opt])
-                batch_train_ppl = np.exp(batch_train_loss)
 
                 print("step : {:06d} train_loss : {:.6f} G_loss : {:.6f} G_acc : {:.2f} D_loss {:.6f}".format(step + 1, batch_train_loss, batch_G_loss, batch_G_acc*100, batch_D_loss))
 
@@ -92,7 +91,7 @@ class Trainer(object):
                                        feed_dict={self.train_loss_graph: batch_train_loss,
                                                   self.G_loss_graph: batch_G_loss,
                                                   self.D_loss_graph: batch_D_loss,
-                                                  self.train_ppl_graph: batch_train_ppl})
+                                                  self.G_acc_graph: batch_G_acc*100})
                     writer.add_summary(summary, step)
 
                 if step % 10000 == 0 and step > 0:
