@@ -61,7 +61,7 @@ class Trainer(object):
         summary_total_loss = tf.summary.scalar("total_loss", self.train_loss_graph)
         summary_G_loss = tf.summary.scalar("G_loss", self.G_loss_graph)
         summary_D_loss = tf.summary.scalar("D_loss", self.D_loss_graph)
-        summary_G_acc = tf.summary.scalar("G_acc", self.train_ppl_graph)
+        summary_G_acc = tf.summary.scalar("G_acc", self.G_acc_graph)
         merged = tf.summary.merge([summary_total_loss, summary_G_loss, summary_D_loss, summary_G_acc])
         config = tf.ConfigProto(allow_soft_placement=True)
         config.gpu_options.allow_growth = True
