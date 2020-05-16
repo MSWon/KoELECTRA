@@ -25,8 +25,8 @@ class Trainer(object):
         train_init_dataset = train_dataset_fn(self.corpus_path,self.vocab_path,
                                               self.max_init_word_len, self.mask_idx, self.init_batch_size)
 
-        train_converge_dataset = train_dataset_fn(self.corpus_path,self.vocab_path,
-                                              self.max_converge_word_len, self.mask_idx, self.converge_batch_size)
+        #train_converge_dataset = train_dataset_fn(self.corpus_path,self.vocab_path,
+        #                                      self.max_converge_word_len, self.mask_idx, self.converge_batch_size)
 
         iters = tf.data.Iterator.from_structure(train_init_dataset.output_types,
                                                 train_init_dataset.output_shapes)
@@ -34,7 +34,7 @@ class Trainer(object):
 
         # create the initialisation operations
         self.train_init_op = iters.make_initializer(train_init_dataset)
-        self.train_converge_op = iters.make_initializer(train_converge_dataset)
+        #self.train_converge_op = iters.make_initializer(train_converge_dataset)
 
         print("Now building model")
         model = Electra(hyp_args)
@@ -78,8 +78,8 @@ class Trainer(object):
             writer = tf.summary.FileWriter('./tensorboard/graph', sess.graph)
 
             for step in range(self.training_steps):
-                if step == self.converge_steps:
-                    sess.run(self.train_converge_op)
+                #if step == self.converge_steps:
+                    #sess.run(self.train_converge_op)
                 n_train_step += 1
                 batch_train_loss, batch_G_loss, batch_G_acc, batch_D_loss, _ = sess.run([self.train_loss, self.G_loss, self.G_acc,
                                                                                          self.D_loss, self.train_opt])
