@@ -92,5 +92,5 @@ class Electra(object):
         grads = average_gradients(tower_grads)
         train_opt = opt.apply_gradients(grads, global_step=global_step)
         new_global_step = global_step + 1
-        train_op = tf.group(train_op, [global_step.assign(new_global_step)])
+        train_opt = tf.group(train_opt, [global_step.assign(new_global_step)])
         return train_loss, G_loss, G_acc, D_loss, train_opt
