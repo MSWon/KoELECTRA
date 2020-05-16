@@ -69,7 +69,7 @@ class Trainer(object):
         with tf.Session(config=config) as sess:
             sess.run(tf.global_variables_initializer())
             if (ckpt and tf.train.checkpoint_exists(ckpt.model_checkpoint_path)):
-                saver.restore(sess, "./model/" + self.model_path)
+                saver.restore(sess, self.model_path)
                 print("Model loaded!")
 
             sess.run(self.train_init_op)
@@ -95,4 +95,4 @@ class Trainer(object):
                     writer.add_summary(summary, step)
 
                 if step % 10000 == 0 and step > 0:
-                    saver.save(sess, "./model/" + self.model_path)
+                    saver.save(sess, self.model_path)
