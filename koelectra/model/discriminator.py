@@ -90,7 +90,7 @@ class Discriminator(object):
         """
         :param logits : (batch_size, max_len)
         :param labels : (batch_size, max_len)
-        :param weight_label : (batch_size,)
+        :param seq_len : (batch_size,)
         """
         labels = tf.cast(labels, tf.float32)
         loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=labels)
@@ -98,3 +98,15 @@ class Discriminator(object):
         # sequence mask for padding
         loss = tf.reduce_sum(loss * weight_label) / (tf.reduce_sum(weight_label) + 1e-10)
         return loss
+
+    def build_accuracy(self, infer, labels, seq_len):
+        """
+        :param infer : (batch_size, max_len)
+        :param labels : (batch_size, max_len)
+        :param seq_len : (batch_size,)
+        """
+        D_equal = tf.cast(tf.equal(infer, labels), tf.float32)
+        weight_label = tf.cast(tf.sequence_mask(seq_len, maxlen=tf.shape(labels)[1]), tf.float32)
+        # sequence mask for padding
+        accuracy = tf.reduce_sum(D_equal * weight_label) / (tf.reduce_sum(weight_label) + 1e-10)
+        return accuracy

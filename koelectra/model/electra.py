@@ -78,10 +78,8 @@ class Electra(object):
                     D_logits = self.D_model.build_graph(D_input_idx)
                     D_infer = tf.cast(D_logits >= 0.5, tf.int32)
                     D_labels = tf.cast(tf.equal(org_input_idx, D_input_idx), tf.int32)
-                    D_loss = self.D_model.build_loss(D_logits, D_labels, seq_len-1)
-
-                    D_equal = tf.cast(tf.equal(D_labels, D_infer), tf.float32)
-                    D_acc = tf.reduce_sum(D_equal * weight_label) / (tf.reduce_sum(weight_label) + 1e-10)
+                    D_loss = self.D_model.build_loss(D_logits, D_labels, seq_len)
+                    D_acc = self.D_model.build_accuracy(D_infer, D_labels, seq_len)
 
                     loss = self.G_weight * G_loss + self.D_weight * D_loss
                     # Reuse variables for the next tower.
