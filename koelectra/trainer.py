@@ -40,14 +40,16 @@ class Trainer(object):
         model = Electra(hyp_args)
         global_step = tf.train.get_or_create_global_step()
 
-        self.train_loss, self.G_loss, self.G_acc, self.D_loss, self.train_opt = model.build_opt(features, hyp_args["D_hidden_dim"],
-                                                                                   global_step, hyp_args["warmup_step"])
+        self.train_loss, self.G_loss, self.G_acc, \
+        self.D_loss, self.D_acc, self.train_opt = model.build_opt(features, hyp_args["D_hidden_dim"],
+                                                                  global_step, hyp_args["warmup_step"])
 
         ## for tensorboard
         self.train_loss_graph = tf.placeholder(shape=None, dtype=tf.float32)
         self.G_loss_graph = tf.placeholder(shape=None, dtype=tf.float32)
         self.D_loss_graph = tf.placeholder(shape=None, dtype=tf.float32)
         self.G_acc_graph = tf.placeholder(shape=None, dtype=tf.float32)
+        self.D_acc_graph = tf.placeholder(shape=None, dtype=tf.float32)
         print("Done")
 
     def train(self):
@@ -62,7 +64,8 @@ class Trainer(object):
         summary_G_loss = tf.summary.scalar("G_loss", self.G_loss_graph)
         summary_D_loss = tf.summary.scalar("D_loss", self.D_loss_graph)
         summary_G_acc = tf.summary.scalar("G_acc", self.G_acc_graph)
-        merged = tf.summary.merge([summary_total_loss, summary_G_loss, summary_D_loss, summary_G_acc])
+        summary_D_acc = tf.summary.scalar("D_acc", self.D_acc_graph)
+        merged = tf.summary.merge([summary_total_loss, summary_G_loss, summary_D_loss, summary_G_acc, summary_D_acc])
         config = tf.ConfigProto(allow_soft_placement=True)
         config.gpu_options.allow_growth = True
 
@@ -81,17 +84,20 @@ class Trainer(object):
                 #if step == self.converge_steps:
                     #sess.run(self.train_converge_op)
                 n_train_step += 1
-                batch_train_loss, batch_G_loss, batch_G_acc, batch_D_loss, _ = sess.run([self.train_loss, self.G_loss, self.G_acc,
-                                                                                         self.D_loss, self.train_opt])
+                batch_train_loss, batch_G_loss, batch_G_acc, \
+                batch_D_loss, batch_D_acc, _ = sess.run([self.train_loss, self.G_loss, self.G_acc,
+                                                         self.D_loss, self.D_acc, self.train_opt])
 
-                print("step : {:06d} train_loss : {:.6f} G_loss : {:.6f} G_acc : {:.2f} D_loss {:.6f}".format(step + 1, batch_train_loss, batch_G_loss, batch_G_acc*100, batch_D_loss))
+                print("step:{:06d} train_loss:{:.6f} G_loss:{:.6f} G_acc:{:.2f} D_loss:{:.6f} D_acc:{:.2f}".\
+                      format(step + 1, batch_train_loss, batch_G_loss, batch_G_acc*100, batch_D_loss, batch_D_acc*100))
 
                 if step % 100 == 0 and step > 0:
                     summary = sess.run(merged,
                                        feed_dict={self.train_loss_graph: batch_train_loss,
                                                   self.G_loss_graph: batch_G_loss,
                                                   self.D_loss_graph: batch_D_loss,
-                                                  self.G_acc_graph: batch_G_acc*100})
+                                                  self.G_acc_graph: batch_G_acc*100,
+                                                  self.D_acc_graph: batch_D_acc*100})
                     writer.add_summary(summary, step)
 
                 if step % 10000 == 0 and step > 0:

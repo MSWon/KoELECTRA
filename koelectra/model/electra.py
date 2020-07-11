@@ -75,11 +75,13 @@ class Electra(object):
 
                     D_input_idx = tensor_scatter_update(input_idx_flatten, indices, G_infer_idx_flatten) # batch_size * seq_len
                     D_input_idx = tf.reshape(D_input_idx, [-1, tf.shape(G_input_idx)[1]])  # batch_size , seq_len
-                    # exclude [CLS] where it's index is 0
-                    D_logits = self.D_model.build_graph(D_input_idx[:,1:])
-                    # compare original input with Discriminator's input from index 1 (exclude [CLS] where it's index is 0)
-                    D_labels = tf.cast(tf.equal(org_input_idx[:,1:], D_input_idx[:,1:]), tf.int32)
+                    D_logits = self.D_model.build_graph(D_input_idx)
+                    D_infer = tf.cast(D_logits >= 0.5, tf.int32)
+                    D_labels = tf.cast(tf.equal(org_input_idx, D_input_idx), tf.int32)
                     D_loss = self.D_model.build_loss(D_logits, D_labels, seq_len-1)
+
+                    D_equal = tf.cast(tf.equal(D_labels, D_infer), tf.float32)
+                    D_acc = tf.reduce_sum(D_equal * weight_label) / (tf.reduce_sum(weight_label) + 1e-10)
 
                     loss = self.G_weight * G_loss + self.D_weight * D_loss
                     # Reuse variables for the next tower.
@@ -93,4 +95,4 @@ class Electra(object):
         train_opt = opt.apply_gradients(grads, global_step=global_step)
         new_global_step = global_step + 1
         train_opt = tf.group(train_opt, [global_step.assign(new_global_step)])
-        return train_loss, G_loss, G_acc, D_loss, train_opt
+        return train_loss, G_loss, G_acc, D_loss, D_acc, train_opt
