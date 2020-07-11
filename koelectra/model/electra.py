@@ -76,7 +76,7 @@ class Electra(object):
                     D_input_idx = tensor_scatter_update(input_idx_flatten, indices, G_infer_idx_flatten) # batch_size * seq_len
                     D_input_idx = tf.reshape(D_input_idx, [-1, tf.shape(G_input_idx)[1]])  # batch_size , seq_len
                     D_logits = self.D_model.build_graph(D_input_idx)
-                    D_infer = tf.cast(D_logits >= 0.5, tf.int32)
+                    D_infer = tf.cast(tf.nn.sigmoid(D_logits) >= 0.5, tf.int32)
                     D_labels = tf.cast(tf.equal(org_input_idx, D_input_idx), tf.int32)
                     D_loss = self.D_model.build_loss(D_logits, D_labels, seq_len)
                     D_acc = self.D_model.build_accuracy(D_infer, D_labels, seq_len)
